@@ -1,6 +1,5 @@
 select * where { 
   service <http://dbpedia.org/sparql> {
-    ?s ?p ?o 
+    select * where { ?s ?p ?o } limit 10
   }
 } 
-limit 10

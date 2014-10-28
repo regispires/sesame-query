@@ -1,0 +1,53 @@
+PREFIX pref: <http://localhost:2020/vocab/>
+PREFIX owl:<http://www.w3.org/2002/07/owl#>
+PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
+select ?name ?reg ?rank ?kingdom ?phylum where{
+service<http://dbpedia.org/sparql>{
+                                select distinct * where{
+                                ?id_dbpedia dbpedia-owl:kingdom ?kingdom .
+                                ?id_dbpedia dbpedia-owl:phylum ?phylum .
+                                }
+}
+service<http://virtuoso.mooo.com/peld-taxon/sparql>{
+                                select distinct * where{
+                                ?id_taxon pref:peld_taxon_scientific_name  ?name .
+                                ?id_taxon  pref:peld_taxon_rank  ?rank.
+                                ?id_taxon owl:sameAs ?id_dbpedia .
+                                }
+}
+service<http://virtuoso.mooo.com/peld-region/sparql>{
+                                select distinct * where{
+                                ?id_reg pref:peld_region_name_reg ?reg .
+                                }
+}
+{
+service<http://virtuoso.mooo.com/peld-plankton/sparql>{
+                                select distinct ?id_taxon ?id_reg where{
+                                ?s pref:peld_analysis_id_taxon ?id_taxon.
+                                ?s pref:peld_analysis_id_collect ?id_an.
+                                ?id_an pref:peld_collect_local ?id_reg.
+                                FILTER EXISTS { ?id_taxon  pref:peld_taxon_rank  "Species" } .
+                                }
+}
+}
+UNION
+{
+service<http://virtuoso.mooo.com/peld-catfish/sparql>{
+                                select distinct ?id_taxon ?id_reg where {
+                                ?s pref:peld_id_taxon ?id_taxon.
+                                ?s pref:peld_collect_local ?id_reg.
+                                FILTER EXISTS { ?id_taxon  pref:peld_taxon_rank  "Species" } .
+                                }
+}
+}
+UNION
+{
+service<http://virtuoso.mooo.com/peld-fish/sparql>{
+                                select distinct ?id_taxon ?id_reg where {
+                                ?s pref:peld_fish_analysis_id_taxon ?id_taxon.
+                                ?s pref:peld_analysis_id_collect ?id_an .
+                                ?id_an pref:peld_fish_local_collect ?id_reg.
+                                FILTER EXISTS { ?id_taxon  pref:peld_taxon_rank  "Species" } .
+                                        }
+}
+}}
